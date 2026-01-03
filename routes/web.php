@@ -1,9 +1,11 @@
+
 <?php
+// routes/web.php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
 
-Route::get('/hola', function () {
-    return 'Hola, Laravel desde cero';
+Route::get('/', function () {
+    return view('welcome');
 });
-Route::get('/posts', [PostController::class, 'index']);
+
+// Las rutas de posts se borran de aquí porque ya viven en api.php
