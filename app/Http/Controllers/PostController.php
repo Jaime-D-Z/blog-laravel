@@ -28,4 +28,55 @@ class PostController extends Controller
             'post' => $post
         ], 201);
     }
+    public function update(Request $request, $id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post no encontrado'
+            ], 404);
+        }
+
+        $request->validate([
+            'title'   => 'required|min:3|max:255',
+            'content' => 'required|min:10',
+        ]);
+
+        $post->update($request->only('title', 'content'));
+
+        return response()->json([
+            'message' => 'Post actualizado',
+            'post' => $post
+        ]);
+    }
+    // GET /api/posts/{id}
+    public function show($id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json(['message' => 'Post no encontrado'], 404);
+        }
+
+        return response()->json($post);
+    }
+
+    // DELETE /api/posts/{id}
+    public function destroy($id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post no encontrado'
+            ], 404);
+        }
+
+        $post->delete();
+
+        return response()->json([
+            'message' => 'Post eliminado correctamente'
+        ]);
+    }
 }
