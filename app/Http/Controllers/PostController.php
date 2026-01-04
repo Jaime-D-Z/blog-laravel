@@ -10,19 +10,27 @@ class PostController extends Controller
     // GET /posts
     public function index()
     {
-        return Post::all();
+        return Post::with('user')->get();
     }
+
 
     // POST /posts
     public function store(Request $request)
     {
+        // 1. Validar
         $request->validate([
             'title'   => 'required|min:3|max:255',
             'content' => 'required|min:10',
         ]);
 
-        $post = Post::create($request->only('title', 'content'));
+        // 2. Crear mezclando los datos del request con el user_id manual
+        $post = Post::create([
+            'title'   => $request->title,
+            'content' => $request->content,
+            'user_id' => 1 // ID temporal hasta que tengas sistema de login
+        ]);
 
+        // 3. Respuesta
         return response()->json([
             'message' => 'Post creado correctamente',
             'post' => $post
