@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate; // Importante para usar Gate
 
 class PostController extends Controller
 {
@@ -13,38 +14,33 @@ class PostController extends Controller
         return Post::with('user')->get();
     }
 
-
     // POST /posts
     public function store(Request $request)
     {
-        // 1. Validar
         $request->validate([
             'title'   => 'required|min:3|max:255',
             'content' => 'required|min:10',
         ]);
 
-        // 2. Crear mezclando los datos del request con el user_id manual
         $post = Post::create([
             'title'   => $request->title,
             'content' => $request->content,
-            'user_id' => 1 // ID temporal hasta que tengas sistema de login
+            'user_id' => 1 // Cambiar a auth()->id() cuando tengas login
         ]);
 
-        // 3. Respuesta
         return response()->json([
             'message' => 'Post creado correctamente',
             'post' => $post
         ], 201);
     }
+
     public function update(Request $request, $id)
     {
-        $post = Post::find($id);
+        $post = Post::findOrFail($id); // failOrFail lanza 404 automáticamente si no existe
 
-        if (!$post) {
-            return response()->json([
-                'message' => 'Post no encontrado'
-            ], 404);
-        }
+        // 🛡️ APLICAR POLICY
+        // Esto verifica el método 'update' en PostPolicy.php
+        Gate::authorize('update', $post);
 
         $request->validate([
             'title'   => 'required|min:3|max:255',
@@ -58,28 +54,20 @@ class PostController extends Controller
             'post' => $post
         ]);
     }
-    // GET /api/posts/{id}
+
     public function show($id)
     {
-        $post = Post::find($id);
-
-        if (!$post) {
-            return response()->json(['message' => 'Post no encontrado'], 404);
-        }
-
+        $post = Post::findOrFail($id);
         return response()->json($post);
     }
 
-    // DELETE /api/posts/{id}
     public function destroy($id)
     {
-        $post = Post::find($id);
+        $post = Post::findOrFail($id);
 
-        if (!$post) {
-            return response()->json([
-                'message' => 'Post no encontrado'
-            ], 404);
-        }
+        // 🛡️ APLICAR POLICY
+        // Esto verifica el método 'delete' en PostPolicy.php
+        Gate::authorize('delete', $post);
 
         $post->delete();
 
